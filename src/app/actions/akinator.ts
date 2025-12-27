@@ -151,7 +151,7 @@ const toView = (api: Akinator, region: AkiRegion): AkiViewState => {
 export const getInitialAkiState = async (): Promise<AkiViewState> => {
   const stored = await readStored();
   if (!stored) {
-    return startFreshSession('pl');
+    return { status: 'idle', region: 'pl', progress: 0, canBack: false };
   }
 
   try {
@@ -159,7 +159,7 @@ export const getInitialAkiState = async (): Promise<AkiViewState> => {
     return toView(api, stored.region);
   } catch {
     await clearStored();
-    return startFreshSession('pl');
+    return { status: 'idle', region: 'pl', progress: 0, canBack: false };
   }
 };
 

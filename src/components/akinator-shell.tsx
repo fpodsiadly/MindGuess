@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import {
     AkiRegion,
     AkiViewState,
@@ -28,17 +28,28 @@ export function AkinatorShell({ initialState }: { initialState: AkiViewState }) 
     const [state, setState] = useState<AkiViewState>(initialState);
     const [region, setRegion] = useState<AkiRegion>(initialState.region ?? "pl");
     const [isPending, startTransition] = useTransition();
+    const autoStarted = useRef(false);
 
     const progressValue = useMemo(() => Math.min(state.progress ?? 0, 100), [state.progress]);
 
-    const handleStart = (nextRegion?: AkiRegion) => {
-        const lang = nextRegion ?? region;
-        startTransition(async () => {
-            const next = await startAkiAction(lang);
-            setRegion(lang);
-            setState(next);
-        });
-    };
+    const handleStart = useCallback(
+        (nextRegion?: AkiRegion) => {
+            const lang = nextRegion ?? region;
+            startTransition(async () => {
+                const next = await startAkiAction(lang);
+                setRegion(lang);
+                setState(next);
+            });
+        },
+        [region],
+    );
+
+    useEffect(() => {
+        if (state.status === "idle" && !autoStarted.current) {
+            autoStarted.current = true;
+            handleStart(region);
+        }
+    }, [state.status, region, handleStart]);
 
     const handleAnswer = (value: number) => {
         startTransition(async () => {
