@@ -86,7 +86,7 @@ export function AkinatorShell({ initialState }: { initialState: AkiViewState }) 
                         className={
                             region === lang
                                 ? "bg-gradient-to-r from-[#ff1f44] via-[#d1122f] to-[#ff1f44] text-red-50 shadow-[0_0_18px_rgba(255,31,68,0.45)] border border-red-500"
-                                : "border border-red-600/40 text-red-100 hover:border-red-400 hover:text-red-50"
+                                : "border border-red-500/70 bg-red-100/95 text-red-900 shadow-[0_0_12px_rgba(255,31,68,0.15)]"
                         }
                     >
                         {regionLabel[lang]}
@@ -244,7 +244,7 @@ export function AkinatorShell({ initialState }: { initialState: AkiViewState }) 
                             size="sm"
                             onClick={handleReset}
                             disabled={isPending}
-                            className="border border-red-600/40 text-red-100 hover:border-red-400 hover:text-red-50"
+                            className="border border-red-500/70 bg-red-100/95 text-red-900 shadow-[0_0_12px_rgba(255,31,68,0.15)] hover:border-red-500 hover:text-red-900"
                         >
                             {region === "pl" ? "Resetuj grę" : "Reset game"}
                         </Button>
