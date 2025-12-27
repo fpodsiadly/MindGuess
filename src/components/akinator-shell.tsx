@@ -56,14 +56,14 @@ export function AkinatorShell({ initialState }: { initialState: AkiViewState }) 
 
     const handleReset = () => {
         startTransition(async () => {
-            const next = await resetAkiAction();
+            const next = await resetAkiAction(region);
             setState(next);
         });
     };
 
     const languageSwitcher = (
-        <div className="flex items-center gap-2 text-sm text-slate-700">
-            <span className="text-xs uppercase tracking-[0.15em] text-slate-500">Język</span>
+        <div className="flex items-center gap-2 text-sm text-red-100/80">
+            <span className="text-xs uppercase tracking-[0.22em] text-red-200">Język</span>
             <div className="flex gap-2">
                 {(["pl", "en"] as AkiRegion[]).map((lang) => (
                     <Button
@@ -72,6 +72,11 @@ export function AkinatorShell({ initialState }: { initialState: AkiViewState }) 
                         variant={region === lang ? "default" : "outline"}
                         onClick={() => handleStart(lang)}
                         disabled={isPending}
+                        className={
+                            region === lang
+                                ? "bg-gradient-to-r from-[#ff1f44] via-[#d1122f] to-[#ff1f44] text-red-50 shadow-[0_0_18px_rgba(255,31,68,0.45)] border border-red-500"
+                                : "border border-red-600/40 text-red-100 hover:border-red-400 hover:text-red-50"
+                        }
                     >
                         {regionLabel[lang]}
                     </Button>
@@ -81,50 +86,54 @@ export function AkinatorShell({ initialState }: { initialState: AkiViewState }) 
     );
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-900">
-            <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
+        <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#0b0c1a] via-[#0a0a14] to-[#0c0f1d] text-red-50">
+            <div className="pointer-events-none absolute inset-0 opacity-60" aria-hidden>
+                <div className="absolute -left-24 top-20 h-80 w-80 rounded-full bg-[#ff1f44] blur-[160px]" aria-hidden="true" />
+                <div className="absolute -right-32 bottom-10 h-96 w-96 rounded-full bg-[#3c0d1f] blur-[180px]" aria-hidden="true" />
+            </div>
+
+            <div className="relative mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-10 sm:px-6">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <p className="text-sm uppercase tracking-[0.2em] text-slate-500">MindGuess</p>
-                        <h1 className="text-2xl font-semibold text-slate-900">Think of a person. I will guess.</h1>
+                    <div className="space-y-1">
+                        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#ff3040] drop-shadow-[0_0_12px_rgba(255,48,64,0.65)]">
+                            MindGuess
+                        </p>
+                        <h1 className="text-3xl font-semibold text-red-50 drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)]">
+                            Think of a person. I will guess.
+                        </h1>
                     </div>
                     {languageSwitcher}
                 </div>
 
-                <Card>
-                    <CardHeader className="space-y-2">
-                        <CardTitle className="flex items-center justify-between text-lg font-semibold">
-                            <span>Session</span>
-                            <span className="text-sm font-normal text-slate-500">
+                <Card className="border border-red-900/40 bg-[#0f111e]/90 shadow-[0_0_40px_rgba(255,31,68,0.18)] backdrop-blur">
+                    <CardHeader className="space-y-3 border-b border-red-900/30 pb-5">
+                        <CardTitle className="flex items-center justify-between text-lg font-semibold text-red-50">
+                            <span className="tracking-wide">Session</span>
+                            <span className="text-sm font-medium text-red-200/80">
                                 {state.status === "question" ? "Pytania w toku" : "Gotowe"}
                             </span>
                         </CardTitle>
-                        <CardDescription className="text-slate-600">
-                            {region === "pl" ? "Odpowiadaj: TAK / NIE / NIE WIEM / Prawdopodobnie / Raczej nie." : "Answer: YES / NO / DON'T KNOW / PROBABLY / PROBABLY NOT."}
+                        <CardDescription className="text-sm text-red-100/80">
+                            {region === "pl"
+                                ? "Odpowiadaj: TAK / NIE / NIE WIEM / Prawdopodobnie / Raczej nie."
+                                : "Answer: YES / NO / DON'T KNOW / PROBABLY / PROBABLY NOT."}
                         </CardDescription>
                         <div className="space-y-1">
-                            <Progress value={progressValue} className="h-2" />
-                            <p className="text-xs text-slate-500">Postęp: {progressValue.toFixed(0)}%</p>
+                            <Progress value={progressValue} className="h-2 bg-red-950/50" />
+                            <p className="text-xs text-red-200/80">Postęp: {progressValue.toFixed(0)}%</p>
                         </div>
                     </CardHeader>
 
-                    <CardContent className="space-y-6">
-                        {state.status === "idle" && (
-                            <div className="space-y-4">
-                                <p className="text-lg font-semibold text-slate-900">Zacznij grę w stylu Akinatora.</p>
-                                <Button onClick={() => handleStart()} disabled={isPending} className="w-full sm:w-auto">
-                                    Start
-                                </Button>
-                            </div>
-                        )}
-
+                    <CardContent className="space-y-6 pt-6">
                         {state.status === "question" && state.question && (
-                            <div className="space-y-4">
+                            <div className="space-y-5">
                                 <div className="space-y-2 text-center sm:text-left">
-                                    <p className="text-sm font-medium uppercase tracking-[0.15em] text-slate-500">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-300">
                                         {region === "pl" ? "Pytanie" : "Question"}
                                     </p>
-                                    <p className="text-2xl font-semibold text-slate-900">{state.question}</p>
+                                    <p className="text-3xl font-semibold text-red-50 drop-shadow-[0_6px_14px_rgba(0,0,0,0.5)]">
+                                        {state.question}
+                                    </p>
                                 </div>
                                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                                     {answerOptions.map((opt) => (
@@ -133,14 +142,24 @@ export function AkinatorShell({ initialState }: { initialState: AkiViewState }) 
                                             onClick={() => handleAnswer(opt.value)}
                                             disabled={isPending}
                                             variant={opt.value === 2 ? "outline" : "default"}
-                                            className="w-full text-base py-3"
+                                            className={
+                                                opt.value === 2
+                                                    ? "w-full border border-red-600/40 text-red-100 hover:border-red-400 hover:text-red-50"
+                                                    : "w-full bg-gradient-to-r from-[#ff1f44] via-[#d1122f] to-[#ff1f44] text-red-50 shadow-[0_0_22px_rgba(255,31,68,0.32)] transition-transform hover:scale-[1.01]"
+                                            }
                                         >
                                             {region === "pl" ? opt.labelPl : opt.labelEn}
                                         </Button>
                                     ))}
                                 </div>
                                 <div className="flex justify-end">
-                                    <Button variant="ghost" size="sm" onClick={handleBack} disabled={isPending || !state.canBack}>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={handleBack}
+                                        disabled={isPending || !state.canBack}
+                                        className="text-red-100 hover:text-red-50 hover:bg-red-900/30"
+                                    >
                                         {region === "pl" ? "Cofnij" : "Back"}
                                     </Button>
                                 </div>
@@ -148,20 +167,20 @@ export function AkinatorShell({ initialState }: { initialState: AkiViewState }) 
                         )}
 
                         {state.status === "guess" && state.guess && (
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <p className="text-sm font-medium uppercase tracking-[0.15em] text-slate-500">{region === "pl" ? "Moja propozycja" : "My guess"}</p>
-                                    <p className="text-2xl font-semibold text-slate-900">{state.guess.name}</p>
+                            <div className="space-y-5">
+                                <div className="space-y-3">
+                                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-300">{region === "pl" ? "Moja propozycja" : "My guess"}</p>
+                                    <p className="text-3xl font-semibold text-red-50 drop-shadow-[0_6px_14px_rgba(0,0,0,0.5)]">{state.guess.name}</p>
                                     {state.guess.description && (
-                                        <p className="text-sm text-slate-600">{state.guess.description}</p>
+                                        <p className="text-sm text-red-100/80">{state.guess.description}</p>
                                     )}
                                     {state.guess.photo && (
-                                        <div className="relative h-40 w-40 overflow-hidden rounded-md">
+                                        <div className="relative h-44 w-44 overflow-hidden rounded-md border border-red-900/50 shadow-[0_0_30px_rgba(255,31,68,0.25)]">
                                             <Image
                                                 src={state.guess.photo}
                                                 alt={state.guess.name}
                                                 fill
-                                                sizes="160px"
+                                                sizes="176px"
                                                 className="object-cover"
                                                 priority={false}
                                             />
@@ -169,26 +188,56 @@ export function AkinatorShell({ initialState }: { initialState: AkiViewState }) 
                                     )}
                                 </div>
                                 <div className="flex flex-col gap-3 sm:flex-row">
-                                    <Button onClick={() => handleStart(region)} disabled={isPending} className="w-full sm:w-auto">
+                                    <Button
+                                        onClick={() => handleStart(region)}
+                                        disabled={isPending}
+                                        className="w-full bg-gradient-to-r from-[#ff1f44] via-[#d1122f] to-[#ff1f44] text-red-50 shadow-[0_0_22px_rgba(255,31,68,0.32)] hover:scale-[1.01]"
+                                    >
                                         {region === "pl" ? "Zagraj ponownie" : "Play again"}
                                     </Button>
-                                    <Button variant="outline" onClick={handleReset} disabled={isPending} className="w-full sm:w-auto">
+                                    <Button
+                                        variant="outline"
+                                        onClick={handleReset}
+                                        disabled={isPending}
+                                        className="w-full border border-red-600/40 text-red-100 hover:border-red-400 hover:text-red-50"
+                                    >
                                         {region === "pl" ? "Reset" : "Reset"}
                                     </Button>
                                 </div>
                             </div>
                         )}
 
+                        {state.status === "idle" && (
+                            <div className="flex items-center justify-between rounded-md border border-dashed border-red-900/50 bg-red-950/30 px-4 py-3 text-sm text-red-100/80">
+                                <span>{region === "pl" ? "Trwa przygotowanie nowej gry..." : "Preparing a new game..."}</span>
+                                <Button
+                                    onClick={() => handleStart(region)}
+                                    disabled={isPending}
+                                    className="bg-gradient-to-r from-[#ff1f44] via-[#d1122f] to-[#ff1f44] text-red-50 shadow-[0_0_22px_rgba(255,31,68,0.32)]"
+                                >
+                                    {region === "pl" ? "Start" : "Start"}
+                                </Button>
+                            </div>
+                        )}
+
                         {state.message && (
-                            <div className="rounded-md bg-slate-50 px-4 py-3 text-sm text-slate-700">{state.message}</div>
+                            <div className="rounded-md border border-red-900/50 bg-red-950/40 px-4 py-3 text-sm text-red-100/90">
+                                {state.message}
+                            </div>
                         )}
                     </CardContent>
 
-                    <CardFooter className="flex items-center justify-between">
-                        <Button variant="outline" size="sm" onClick={handleReset} disabled={isPending}>
+                    <CardFooter className="flex items-center justify-between border-t border-red-900/30 pt-4 text-xs text-red-200/80">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleReset}
+                            disabled={isPending}
+                            className="border border-red-600/40 text-red-100 hover:border-red-400 hover:text-red-50"
+                        >
                             {region === "pl" ? "Resetuj grę" : "Reset game"}
                         </Button>
-                        <span className="text-xs text-slate-500">{region === "pl" ? "Silnik: Akinator API" : "Powered by Akinator API"}</span>
+                        <span>{region === "pl" ? "Silnik: Akinator API" : "Powered by Akinator API"}</span>
                     </CardFooter>
                 </Card>
             </div>

@@ -84,6 +84,14 @@ const clearStored = async () => {
   store.delete(STATE_COOKIE);
 };
 
+const startFreshSession = async (lang: AkiRegion): Promise<AkiViewState> => {
+  const api = new Akinator({ region: lang, childMode: false });
+  await api.start();
+  const nextStored = toStored(api, lang);
+  await writeStored(nextStored);
+  return toView(api, lang);
+};
+
 const toStored = (api: Akinator, region: AkiRegion): StoredAki => {
   const apiInt = asInternal(api);
   return {
@@ -143,7 +151,7 @@ const toView = (api: Akinator, region: AkiRegion): AkiViewState => {
 export const getInitialAkiState = async (): Promise<AkiViewState> => {
   const stored = await readStored();
   if (!stored) {
-    return { status: 'idle', region: 'pl', progress: 0, canBack: false };
+    return startFreshSession('pl');
   }
 
   try {
@@ -151,16 +159,13 @@ export const getInitialAkiState = async (): Promise<AkiViewState> => {
     return toView(api, stored.region);
   } catch {
     await clearStored();
-    return { status: 'idle', region: 'pl', progress: 0, canBack: false };
+    return startFreshSession('pl');
   }
 };
 
 export const startAkiAction = async (region?: string): Promise<AkiViewState> => {
   const lang = ensureRegion(region);
-  const api = new Akinator({ region: lang, childMode: false });
-  await api.start();
-  await writeStored(toStored(api, lang));
-  return toView(api, lang);
+  return startFreshSession(lang);
 };
 
 export const answerAkiAction = async (answer: number): Promise<AkiViewState> => {
@@ -192,7 +197,8 @@ export const backAkiAction = async (): Promise<AkiViewState> => {
   return toView(api, stored.region);
 };
 
-export const resetAkiAction = async (): Promise<AkiViewState> => {
+export const resetAkiAction = async (region?: string): Promise<AkiViewState> => {
   await clearStored();
-  return { status: 'idle', region: 'pl', progress: 0, canBack: false };
+  const lang = ensureRegion(region);
+  return startFreshSession(lang);
 };
