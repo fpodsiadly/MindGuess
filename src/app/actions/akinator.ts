@@ -36,6 +36,24 @@ type StoredAki = {
   childMode: boolean;
 };
 
+type AkinatorInternal = {
+  session: string;
+  signature: string;
+  baseUrl: string;
+  sid: number;
+  step: number;
+  progress: number;
+  question: string;
+  isWin: boolean;
+  sugestion_name?: string;
+  sugestion_desc?: string;
+  sugestion_photo?: string;
+  step_last?: number;
+  childMode?: boolean;
+};
+
+const asInternal = (api: Akinator): AkinatorInternal => api as unknown as AkinatorInternal;
+
 const STATE_COOKIE = 'akinator-state';
 const MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
@@ -67,44 +85,45 @@ const clearStored = async () => {
 };
 
 const toStored = (api: Akinator, region: AkiRegion): StoredAki => {
-  const anyApi = api as any;
+  const apiInt = asInternal(api);
   return {
     region,
-    session: anyApi.session,
-    signature: anyApi.signature,
-    baseUrl: anyApi.baseUrl,
-    sid: anyApi.sid,
-    step: anyApi.step,
-    progress: anyApi.progress,
-    question: anyApi.question,
-    isWin: anyApi.isWin,
-    sugestion_name: anyApi.sugestion_name,
-    sugestion_desc: anyApi.sugestion_desc,
-    sugestion_photo: anyApi.sugestion_photo,
-    step_last: anyApi.step_last,
-    childMode: anyApi.childMode ?? false,
+    session: apiInt.session,
+    signature: apiInt.signature,
+    baseUrl: apiInt.baseUrl,
+    sid: apiInt.sid,
+    step: apiInt.step,
+    progress: apiInt.progress,
+    question: apiInt.question,
+    isWin: apiInt.isWin,
+    sugestion_name: apiInt.sugestion_name,
+    sugestion_desc: apiInt.sugestion_desc,
+    sugestion_photo: apiInt.sugestion_photo,
+    step_last: apiInt.step_last,
+    childMode: apiInt.childMode ?? false,
   } satisfies StoredAki;
 };
 
 const hydrate = (stored: StoredAki): Akinator => {
   const api = new Akinator({ region: stored.region, childMode: stored.childMode });
-  const anyApi = api as any;
-  anyApi.session = stored.session;
-  anyApi.signature = stored.signature;
-  anyApi.baseUrl = stored.baseUrl;
-  anyApi.sid = stored.sid;
-  anyApi.step = stored.step;
-  anyApi.progress = stored.progress;
-  anyApi.question = stored.question;
-  anyApi.isWin = stored.isWin;
-  anyApi.sugestion_name = stored.sugestion_name ?? '';
-  anyApi.sugestion_desc = stored.sugestion_desc ?? '';
-  anyApi.sugestion_photo = stored.sugestion_photo ?? '';
-  anyApi.step_last = stored.step_last;
+  const apiInt = asInternal(api);
+  apiInt.session = stored.session;
+  apiInt.signature = stored.signature;
+  apiInt.baseUrl = stored.baseUrl;
+  apiInt.sid = stored.sid;
+  apiInt.step = stored.step;
+  apiInt.progress = stored.progress;
+  apiInt.question = stored.question;
+  apiInt.isWin = stored.isWin;
+  apiInt.sugestion_name = stored.sugestion_name ?? '';
+  apiInt.sugestion_desc = stored.sugestion_desc ?? '';
+  apiInt.sugestion_photo = stored.sugestion_photo ?? '';
+  apiInt.step_last = stored.step_last;
   return api;
 };
 
 const toView = (api: Akinator, region: AkiRegion): AkiViewState => {
+  const apiInt = asInternal(api);
   return {
     status: api.isWin ? 'guess' : 'question',
     region,
@@ -112,12 +131,12 @@ const toView = (api: Akinator, region: AkiRegion): AkiViewState => {
     progress: api.progress,
     guess: api.isWin
       ? {
-          name: (api as any).sugestion_name ?? '',
-          description: (api as any).sugestion_desc ?? '',
-          photo: (api as any).sugestion_photo ?? '',
+          name: apiInt.sugestion_name ?? '',
+          description: apiInt.sugestion_desc ?? '',
+          photo: apiInt.sugestion_photo ?? '',
         }
       : undefined,
-    canBack: (api as any).step > 0,
+    canBack: apiInt.step > 0,
   } satisfies AkiViewState;
 };
 
@@ -165,7 +184,7 @@ export const backAkiAction = async (): Promise<AkiViewState> => {
   }
 
   const api = hydrate(stored);
-  if ((api as any).step > 0) {
+  if (asInternal(api).step > 0) {
     await api.cancelAnswer();
   }
   const nextStored = toStored(api, stored.region);
