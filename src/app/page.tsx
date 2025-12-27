@@ -1,12 +1,12 @@
-import { getInitialState } from "@/app/actions/game";
-import { GameShell } from "@/components/game-shell";
+import { getInitialAkiState } from "@/app/actions/akinator";
+import { AkinatorShell } from "@/components/akinator-shell";
 
 export default async function HomePage() {
-  const initialState = await getInitialState();
+  const initialState = await getInitialAkiState();
 
   return (
     <main>
-      <GameShell initialState={initialState} />
+      <AkinatorShell initialState={initialState} />
     </main>
   );
 }

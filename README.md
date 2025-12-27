@@ -1,71 +1,39 @@
-## MindGuess
+## MindGuess (Akinator mode)
 
-AI-powered guessing game. Think of a person, answer Yes/No/Unknown, and the app narrows candidates using entropy-based questions. If it fails, you teach it the new person and traits.
+Teraz aplikacja korzysta wyłącznie z Akinator API (bez lokalnej bazy danych i bez własnego silnika). Strona główna oferuje tryb PL/EN i 5 odpowiedzi Akinatora.
 
 ### Stack
 
 - Next.js App Router, TypeScript, Tailwind, shadcn/ui
-- Prisma ORM + PostgreSQL
-- Server Actions for game logic; thin client UI
+- Akinator API (`@aqul/akinator-api`)
 
 ### Setup
 
-1. Install deps
-
-```
-npm install
-```
-
-2. Environment
-   Create `.env.local` with your Postgres connection string:
-
-# optional: seed sample data
-
-npx prisma db seed
-DATABASE_URL="postgresql://USER:PASS@HOST:PORT/DB?schema=public"
+1. Zainstaluj zależności:
 
 ```
 
-3. Prisma
+```
 
 ```
 
-npx prisma generate
-npx prisma migrate dev
-
-# optional: seed when seed script exists
-
-# npx prisma db seed
-
+2. Uruchom dev server:
 ```
 
-4. Dev server
-
 ```
-
-npm run dev
-
-```
-
-Open http://localhost:3000.
+Otwórz http://localhost:3000. Wybierz język (domyślnie PL) i kliknij Start.
 
 ### Gameplay flow
-
-- App asks highest-entropy trait question; Unknown answers do not filter candidates.
-- When confident or out of useful questions, it guesses and asks for confirmation.
-- If wrong, you provide the correct person and trait values (optionally add a new trait); the app persists and restarts.
+- Silnik pyta przez Akinator API; odpowiadasz: Tak / Nie / Nie wiem / Prawdopodobnie / Raczej nie.
+- Gdy Akinator zgadnie, pokazuje propozycję z opisem/zdjęciem.
 
 ### Scripts
-
 - `npm run dev` – start dev server
 - `npm run build` – production build
 - `npm run start` – run built app
 - `npm run lint` – lint
-- `npm run prisma:migrate` – apply dev migrations
-- `npm run prisma:generate` – regenerate Prisma client
 
-### Notes
-
-- Keep business logic on the server (see `src/app/actions/game.ts`, `src/lib/game.ts`).
-- UI components live in `src/components` using shadcn/ui primitives.
+### Notatki
+- Lokalna baza i seedy są niewykorzystywane w tym trybie (Akinator ma własne dane).
+npx prisma generate
 ```

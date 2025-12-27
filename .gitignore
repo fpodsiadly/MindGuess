@@ -14,10 +14,6 @@
 /coverage
 /.turbo
 
-# database artifacts
-/prisma/*.db
-/prisma/generated
-
 # next.js
 /.next/
 /out/
