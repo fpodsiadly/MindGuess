@@ -19,23 +19,32 @@ npm install
 2. Environment
    Create `.env.local` with your Postgres connection string:
 
-```
+# optional: seed sample data
+
+npx prisma db seed
 DATABASE_URL="postgresql://USER:PASS@HOST:PORT/DB?schema=public"
+
 ```
 
 3. Prisma
 
 ```
+
 npx prisma generate
 npx prisma migrate dev
+
 # optional: seed when seed script exists
+
 # npx prisma db seed
+
 ```
 
 4. Dev server
 
 ```
+
 npm run dev
+
 ```
 
 Open http://localhost:3000.
@@ -59,3 +68,4 @@ Open http://localhost:3000.
 
 - Keep business logic on the server (see `src/app/actions/game.ts`, `src/lib/game.ts`).
 - UI components live in `src/components` using shadcn/ui primitives.
+```
