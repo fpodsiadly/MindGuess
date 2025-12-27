@@ -145,7 +145,7 @@ export function GameShell({ initialState }: Props) {
                             </span>
                         </CardTitle>
                         <CardDescription className="text-slate-600">
-                            Answer with the buttons below. I will ask as few questions as possible.
+                            Odpowiadaj: TAK / NIE / NIE WIEM. Zadawaj jak najmniej pytań.
                         </CardDescription>
                         <div className="space-y-1">
                             <Progress value={progressValue} className="h-2" />
@@ -158,9 +158,9 @@ export function GameShell({ initialState }: Props) {
 
                         {state.mode === "question" && state.currentQuestion && (
                             <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <p className="text-sm font-medium uppercase tracking-[0.1em] text-slate-500">Question</p>
-                                    <p className="text-xl font-semibold text-slate-900">{state.currentQuestion.question}</p>
+                                <div className="space-y-2 text-center sm:text-left">
+                                    <p className="text-sm font-medium uppercase tracking-[0.15em] text-slate-500">Pytanie</p>
+                                    <p className="text-2xl font-semibold text-slate-900">{state.currentQuestion.question}</p>
                                 </div>
                                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                                     {(Object.keys(answerLabels) as AnswerOption[]).map((value) => (
@@ -169,9 +169,9 @@ export function GameShell({ initialState }: Props) {
                                             onClick={() => handleAnswer(value)}
                                             variant={value === "unknown" ? "outline" : "default"}
                                             disabled={isPending}
-                                            className="w-full"
+                                            className="w-full text-base py-3"
                                         >
-                                            {answerLabels[value]}
+                                            {value === "unknown" ? "Nie wiem" : value === "yes" ? "Tak" : "Nie"}
                                         </Button>
                                     ))}
                                 </div>
@@ -296,7 +296,7 @@ export function GameShell({ initialState }: Props) {
 
                         {(state.mode === "empty" || state.mode === "done") && (
                             <div className="space-y-4">
-                                <p className="text-lg font-semibold text-slate-900">{state.message ?? "Ready to play again?"}</p>
+                                <p className="text-lg font-semibold text-slate-900">{state.message ?? "Zaczynamy nową grę?"}</p>
                                 <Button onClick={handleReset} disabled={isPending} className="w-full sm:w-auto">
                                     Start a new game
                                 </Button>
@@ -318,21 +318,20 @@ export function GameShell({ initialState }: Props) {
                     {state.mode === "question" || state.mode === "guess" ? (
                         <CardFooter className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div className="text-xs text-slate-500">
-                                {isPending ? "Thinking..." : "Answer to continue."}
+                                {isPending ? "Myślę..." : "Odpowiedz, aby kontynuować."}
                             </div>
                             <Button variant="outline" size="sm" onClick={handleReset} disabled={isPending}>
-                                Reset game
+                                Resetuj grę
                             </Button>
                         </CardFooter>
                     ) : null}
                 </Card>
-
                 {history.length > 0 && (
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">History</CardTitle>
+                            <CardTitle className="text-base">Historia odpowiedzi</CardTitle>
                             <CardDescription className="text-sm text-slate-600">
-                                What you have already answered.
+                                Co już padło w tej sesji.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
@@ -340,7 +339,7 @@ export function GameShell({ initialState }: Props) {
                                 <div key={item.traitKey} className="flex items-center justify-between rounded-md border border-slate-200 p-3">
                                     <div>
                                         <p className="text-sm font-medium text-slate-900">{item.question}</p>
-                                        <p className="text-xs text-slate-500">Key: {item.traitKey}</p>
+                                        <p className="text-xs text-slate-500">Klucz: {item.traitKey}</p>
                                     </div>
                                     <span
                                         className={cn(
@@ -350,7 +349,7 @@ export function GameShell({ initialState }: Props) {
                                             item.answer === "unknown" && "bg-slate-100 text-slate-700",
                                         )}
                                     >
-                                        {answerLabels[item.answer]}
+                                        {item.answer === "yes" ? "Tak" : item.answer === "no" ? "Nie" : "Nie wiem"}
                                     </span>
                                 </div>
                             ))}

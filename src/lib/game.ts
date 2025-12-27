@@ -246,11 +246,13 @@ export const deriveState = (
 
   const next = selectNextQuestion(traits, candidates, storedState.answers);
   const guess = guessCandidate(candidates, storedState.answers);
+  const confidenceThreshold = 0.7;
+  const questionBudget = 25;
   const shouldGuess =
     candidateCount === 1 ||
-    !next ||
-    (candidateCount <= 3 && next.score < 0.2) ||
-    storedState.questionCount >= 20;
+    (!next && !!guess) ||
+    (guess && guess.confidence >= confidenceThreshold) ||
+    storedState.questionCount >= questionBudget;
 
   if (shouldGuess && guess) {
     return {
