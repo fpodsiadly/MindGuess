@@ -146,22 +146,22 @@ export function AkinatorShell({ initialState }: { initialState: AkiViewState }) 
                                         {state.question}
                                     </p>
                                 </div>
-                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                    {answerOptions.map((opt) => (
-                                        <Button
-                                            key={opt.key}
-                                            onClick={() => handleAnswer(opt.value)}
-                                            disabled={isPending}
-                                            variant={opt.value === 2 ? "outline" : "default"}
-                                            className={
-                                                opt.value === 2
-                                                    ? "w-full border border-red-600/40 text-red-100 hover:border-red-400 hover:text-red-50"
-                                                    : "w-full bg-gradient-to-r from-[#ff1f44] via-[#d1122f] to-[#ff1f44] text-red-50 shadow-[0_0_22px_rgba(255,31,68,0.32)] transition-transform hover:scale-[1.01]"
-                                            }
-                                        >
-                                            {region === "pl" ? opt.labelPl : opt.labelEn}
-                                        </Button>
-                                    ))}
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:max-w-3xl mx-auto w-full justify-items-center">
+                                    {answerOptions.map((opt) => {
+                                        const baseGradient = "bg-gradient-to-r from-[#ff1f44] via-[#d1122f] to-[#ff1f44] text-red-50 shadow-[0_0_22px_rgba(255,31,68,0.32)]";
+                                        const neutral = "border border-red-500/70 bg-red-100/95 text-red-900 shadow-[0_0_12px_rgba(255,31,68,0.15)]";
+                                        const classes = opt.value === 2 ? neutral : baseGradient;
+                                        return (
+                                            <Button
+                                                key={opt.key}
+                                                onClick={() => handleAnswer(opt.value)}
+                                                disabled={isPending}
+                                                className={`w-full transition-transform hover:scale-[1.01] ${classes}`}
+                                            >
+                                                {region === "pl" ? opt.labelPl : opt.labelEn}
+                                            </Button>
+                                        );
+                                    })}
                                 </div>
                                 <div className="flex justify-end">
                                     <Button
