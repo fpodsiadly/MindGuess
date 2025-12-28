@@ -77,6 +77,8 @@ const writeStored = async (state: StoredAki) => {
     httpOnly: true,
     sameSite: 'lax',
     maxAge: MAX_AGE,
+    secure: true,
+    path: '/',
   });
 };
 
@@ -167,7 +169,11 @@ export const getInitialAkiState = async (): Promise<AkiViewState> => {
 
 export const startAkiAction = async (region?: string): Promise<AkiViewState> => {
   const lang = ensureRegion(region);
-  return startFreshSession(lang);
+  try {
+    return await startFreshSession(lang);
+  } catch {
+    return { status: 'idle', region: lang, progress: 0, canBack: false, message: 'Nie udało się rozpocząć gry. Spróbuj ponownie.' };
+  }
 };
 
 export const answerAkiAction = async (answer: number): Promise<AkiViewState> => {
@@ -178,10 +184,14 @@ export const answerAkiAction = async (answer: number): Promise<AkiViewState> => 
 
   const api = hydrate(stored);
   const safeAnswer = Math.max(0, Math.min(4, answer));
-  await api.answer(safeAnswer as AkinatorAnswer);
-  const nextStored = toStored(api, stored.region);
-  await writeStored(nextStored);
-  return toView(api, stored.region);
+  try {
+    await api.answer(safeAnswer as AkinatorAnswer);
+    const nextStored = toStored(api, stored.region);
+    await writeStored(nextStored);
+    return toView(api, stored.region);
+  } catch {
+    return { ...toView(api, stored.region), message: 'Nie udało się wysłać odpowiedzi. Spróbuj ponownie.' };
+  }
 };
 
 export const backAkiAction = async (): Promise<AkiViewState> => {
@@ -192,7 +202,11 @@ export const backAkiAction = async (): Promise<AkiViewState> => {
 
   const api = hydrate(stored);
   if (asInternal(api).step > 0) {
-    await api.cancelAnswer();
+    try {
+      await api.cancelAnswer();
+    } catch {
+      return { ...toView(api, stored.region), message: 'Nie udało się cofnąć. Spróbuj ponownie.' };
+    }
   }
   const nextStored = toStored(api, stored.region);
   await writeStored(nextStored);
@@ -202,5 +216,9 @@ export const backAkiAction = async (): Promise<AkiViewState> => {
 export const resetAkiAction = async (region?: string): Promise<AkiViewState> => {
   await clearStored();
   const lang = ensureRegion(region);
-  return startFreshSession(lang);
+  try {
+    return await startFreshSession(lang);
+  } catch {
+    return { status: 'idle', region: lang, progress: 0, canBack: false, message: 'Nie udało się zresetować. Spróbuj ponownie.' };
+  }
 };
