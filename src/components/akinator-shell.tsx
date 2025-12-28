@@ -24,11 +24,22 @@ const answerOptions = [
 
 const regionLabel: Record<AkiRegion, string> = { pl: "Polski", en: "English" };
 
+const langStorageKey = "akinator-lang";
+
+const getInitials = (value?: string) => {
+    if (!value) return "?";
+    const parts = value.split(" ").filter(Boolean);
+    if (!parts.length) return "?";
+    const [first, second] = parts;
+    return (first[0] + (second?.[0] ?? "")).toUpperCase();
+};
+
 export function AkinatorShell({ initialState }: { initialState: AkiViewState }) {
     const [state, setState] = useState<AkiViewState>(initialState);
     const [region, setRegion] = useState<AkiRegion>(initialState.region ?? "pl");
     const [isPending, startTransition] = useTransition();
     const autoStarted = useRef(false);
+    const [imageError, setImageError] = useState(false);
 
     const progressValue = useMemo(() => Math.min(state.progress ?? 0, 100), [state.progress]);
 
@@ -39,10 +50,31 @@ export function AkinatorShell({ initialState }: { initialState: AkiViewState }) 
                 const next = await startAkiAction(lang);
                 setRegion(lang);
                 setState(next);
+                try {
+                    localStorage.setItem(langStorageKey, lang);
+                } catch {
+                    /* ignore */
+                }
             });
         },
         [region],
     );
+
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem(langStorageKey) as AkiRegion | null;
+            if (saved && saved !== region) {
+                setRegion(saved);
+                if (state.status === "idle" && !autoStarted.current) {
+                    autoStarted.current = true;
+                    handleStart(saved);
+                }
+            }
+        } catch {
+            /* ignore */
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         if (state.status === "idle" && !autoStarted.current) {
@@ -50,6 +82,10 @@ export function AkinatorShell({ initialState }: { initialState: AkiViewState }) 
             handleStart(region);
         }
     }, [state.status, region, handleStart]);
+
+    useEffect(() => {
+        setImageError(false);
+    }, [state.guess?.photo]);
 
     const handleAnswer = (value: number) => {
         startTransition(async () => {
@@ -120,9 +156,12 @@ export function AkinatorShell({ initialState }: { initialState: AkiViewState }) 
                     <CardHeader className="space-y-3 border-b border-red-900/30 pb-5">
                         <CardTitle className="flex items-center justify-between text-lg font-semibold text-red-50">
                             <span className="tracking-wide">Session</span>
-                            <span className="text-sm font-medium text-red-200/80">
-                                {state.status === "question" ? "Pytania w toku" : "Gotowe"}
-                            </span>
+                            <div className="flex items-center gap-3 text-xs text-red-200/80">
+                                <span>
+                                    {state.status === "question" ? `${(state.step ?? 0) + 1} pytanie` : "Gotowe"}
+                                </span>
+                                <span className="opacity-80">Pewność: {progressValue.toFixed(0)}%</span>
+                            </div>
                         </CardTitle>
                         <CardDescription className="text-sm text-red-100/80">
                             {region === "pl"
@@ -142,9 +181,13 @@ export function AkinatorShell({ initialState }: { initialState: AkiViewState }) 
                                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-300">
                                         {region === "pl" ? "Pytanie" : "Question"}
                                     </p>
-                                    <p className="text-3xl font-semibold text-red-50 drop-shadow-[0_6px_14px_rgba(0,0,0,0.5)]">
-                                        {state.question}
-                                    </p>
+                                    {isPending ? (
+                                        <div className="h-9 w-64 rounded bg-red-900/40 animate-pulse" />
+                                    ) : (
+                                        <p className="text-3xl font-semibold text-red-50 drop-shadow-[0_6px_14px_rgba(0,0,0,0.5)]">
+                                            {state.question}
+                                        </p>
+                                    )}
                                 </div>
                                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:max-w-3xl mx-auto w-full justify-items-center">
                                     {answerOptions.map((opt) => {
@@ -158,7 +201,7 @@ export function AkinatorShell({ initialState }: { initialState: AkiViewState }) 
                                                 disabled={isPending}
                                                 className={`w-full transition-transform hover:scale-[1.01] ${classes}`}
                                             >
-                                                {region === "pl" ? opt.labelPl : opt.labelEn}
+                                                {isPending ? "..." : region === "pl" ? opt.labelPl : opt.labelEn}
                                             </Button>
                                         );
                                     })}
@@ -185,7 +228,7 @@ export function AkinatorShell({ initialState }: { initialState: AkiViewState }) 
                                     {state.guess.description && (
                                         <p className="text-sm text-red-100/80">{state.guess.description}</p>
                                     )}
-                                    {state.guess.photo && (
+                                    {state.guess.photo && !imageError ? (
                                         <div className="relative h-44 w-44 overflow-hidden rounded-md border border-red-900/50 shadow-[0_0_30px_rgba(255,31,68,0.25)]">
                                             <Image
                                                 src={state.guess.photo}
@@ -194,7 +237,12 @@ export function AkinatorShell({ initialState }: { initialState: AkiViewState }) 
                                                 sizes="176px"
                                                 className="object-cover"
                                                 priority={false}
+                                                onError={() => setImageError(true)}
                                             />
+                                        </div>
+                                    ) : (
+                                        <div className="flex h-44 w-44 items-center justify-center rounded-md border border-red-900/50 bg-gradient-to-br from-red-900/70 to-red-700/60 text-3xl font-semibold text-red-50 shadow-[0_0_30px_rgba(255,31,68,0.25)]">
+                                            {getInitials(state.guess.name)}
                                         </div>
                                     )}
                                 </div>

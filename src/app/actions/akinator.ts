@@ -10,6 +10,7 @@ export type AkiViewState = {
   region: AkiRegion;
   question?: string;
   progress: number;
+  step?: number;
   guess?: {
     name: string;
     description: string;
@@ -137,6 +138,7 @@ const toView = (api: Akinator, region: AkiRegion): AkiViewState => {
     region,
     question: api.question,
     progress: api.progress,
+    step: apiInt.step,
     guess: api.isWin
       ? {
           name: apiInt.sugestion_name ?? '',
